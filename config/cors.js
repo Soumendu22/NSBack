@@ -29,10 +29,15 @@ const corsOptions = {
     if (isAllowed) {
       callback(null, true);
     } else {
-      // In development or production, log but allow requests to prevent CORS errors
-      console.log('CORS warning for origin:', origin);
-      // Allow the request anyway to prevent blocking
-      callback(null, true);
+      // In production on Vercel, allow all .vercel.app domains to prevent CORS errors
+      if (origin && origin.includes('.vercel.app')) {
+        console.log('CORS: Allowing Vercel origin:', origin);
+        callback(null, true);
+      } else {
+        console.log('CORS warning for origin:', origin);
+        // Allow the request anyway to prevent blocking
+        callback(null, true);
+      }
     }
   },
   credentials: true,
@@ -44,10 +49,13 @@ const corsOptions = {
     'X-Requested-With',
     'Accept',
     'Origin',
-    'Cache-Control'
+    'Cache-Control',
+    'X-CSRF-Token'
   ],
+  exposedHeaders: ['Content-Length', 'X-Request-Id'],
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   preflightContinue: false,
+  maxAge: 86400 // Cache preflight requests for 24 hours
 };
 
 module.exports = { corsOptions };
